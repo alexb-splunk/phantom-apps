@@ -488,7 +488,7 @@ class DigiCertConnector(BaseConnector):
 
         # Add the response into the data section
         action_result.update_data(orders)
-        
+
         # Add a dictionary that is made up of the most important values from data into the summary
         action_result.update_summary({
             "total_orders": len(orders),
