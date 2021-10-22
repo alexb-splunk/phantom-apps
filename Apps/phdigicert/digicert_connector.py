@@ -19,6 +19,8 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+from datetime import datetime
+
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -399,6 +401,101 @@ class DigiCertConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    def _handle_list_certs(self, param):
+        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        orders = []
+
+        filter_params = {
+            "offset": 0,
+            "limit": 1000
+        }
+
+        if param.get("id"):
+            filter_params["filters[id]"] = param.get("id")
+        if param.get("status"):
+            filter_params["filters[status]"] = param.get("status")
+        if param.get("organization_id"):
+            filter_params["filters[organization_id]"] = param.get("organization_id")
+        if param.get("product_name_id"):
+            filter_params["filters[product_name_id]"] = param.get("product_name_id")
+        if param.get("valid_till"):
+            key = "filters[valid_till]"
+
+            if "today" in param["valid_till"]:
+                value = datetime.today().strftime("%Y-%m-%d")
+            else:
+                value = param["valid_till"]
+
+            if param["valid_till"].startswith("<"):
+                key = key + "<"
+                value = value.strip("<")
+            elif param["valid_till"].startswith(">"):
+                value = ">" + value.strip(">")
+            else:
+                value = value.strip("=")
+
+            filter_params[key] = value
+        if param.get("common_name"):
+            filter_params["filters[common_name]"] = param.get("common_name")
+        if param.get("date_created"):
+            key = "filters[date_created]"
+
+            if "today" in param["date_created"]:
+                value = datetime.today().strftime("%Y-%m-%d")
+            else:
+                value = param["date_created"]
+
+            if param["date_created"].startswith("<"):
+                key = key + "<"
+                value = value.strip("<")
+            elif param["date_created"].startswith(">"):
+                value = ">" + value.strip(">")
+            else:
+                value = value.strip("=")
+
+            filter_params[key] = value
+        if param.get("is_renewed"):
+            filter_params["filters[is_renewed]"] = 1 if param.get("is_renewed") == "True" else 0
+        if param.get("email"):
+            filter_params["filters[email]"] = param.get("email")
+        if param.get("certificate_id"):
+            filter_params["filters[certificate_id]"] = param.get("certificate_id")
+        if param.get("serial_number"):
+            filter_params["filters[serial_number]"] = param.get("serial_number")
+
+        while True:
+            # response is paginated, so iterate over all pages
+            ret_val, response = self._make_rest_call(
+                "/order/certificate",
+                action_result,
+                params=filter_params
+            )
+
+            if phantom.is_fail(ret_val):
+                # the call to the 3rd party device or service failed, action result should contain all the error details
+                return action_result.get_status()
+
+            if response.get("orders"):
+                orders.extend(response.get("orders", []))
+            else:
+                # we are out of pages when there are no more orders in the response
+                break
+
+            filter_params["offset"] += filter_params["limit"]
+
+        # Add the response into the data section
+        action_result.update_data(orders)
+        
+        # Add a dictionary that is made up of the most important values from data into the summary
+        action_result.update_summary({
+            "total_orders": len(orders),
+        })
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
 
         ret_val = phantom.APP_SUCCESS
@@ -424,6 +521,9 @@ class DigiCertConnector(BaseConnector):
 
         elif action_id == "get_request_info":
             ret_val = self._handle_get_request_info(param)
+
+        elif action_id == "list_certs":
+            ret_val = self._handle_list_certs(param)
 
         return ret_val
 

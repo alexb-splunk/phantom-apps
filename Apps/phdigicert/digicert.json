@@ -19,7 +19,7 @@
         }
     ],
     "license": "Copyright (c) 2021 Splunk Inc.",
-    "app_version": "1.0.0",
+    "app_version": "1.1.0",
     "utctime_updated": "2021-05-04T21:37:1620164263Z",
     "package_name": "phantom_digicert",
     "main_module": "digicert_connector.py",
@@ -662,7 +662,10 @@
                 },
                 {
                     "data_path": "action_result.data.*.organization_contact.email",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "contains": [
+                        "email"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.organization_contact.first_name",
@@ -757,7 +760,10 @@
                 },
                 {
                     "data_path": "action_result.data.*.technical_contact.email",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "contains": [
+                        "email"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.technical_contact.first_name",
@@ -781,7 +787,10 @@
                 },
                 {
                     "data_path": "action_result.data.*.user.email",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "contains": [
+                        "email"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.user.first_name",
@@ -830,6 +839,339 @@
                 },
                 {
                     "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                }
+            ],
+            "render": {
+                "type": "table"
+            },
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list certs",
+            "identifier": "list_certs",
+            "description": "List certificate orders",
+            "type": "generic",
+            "read_only": true,
+            "parameters": {
+                "order_id": {
+                    "description": "Filter on order id",
+                    "data_type": "string",
+                    "required": false,
+                    "contains": [
+                        "digicert order id"
+                    ],
+                    "order": 0
+                },
+                "status": {
+                    "description": "Filter on order status. Note that 'issued' includes ANY cert that has been issued, including if it is expired.",
+                    "data_type": "string",
+                    "required": false,
+                    "value_list": [
+                        "pending",
+                        "issued",
+                        "rejected",
+                        "revoked",
+                        "waiting_pickup",
+                        "reissue_pending",
+                        "canceled"
+                    ],
+                    "order": 1
+                },
+                "organization_id": {
+                    "description": "Filter on org id",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 2
+                },
+                "product_name_id": {
+                    "description": "Filter on certificate type",
+                    "data_type": "string",
+                    "required": false,
+                    "value_list": [
+                        "ssl_dv_geotrust",
+                        "ssl_dv_rapidssl",
+                        "ssl_dv_thawte",
+                        "ssl_dv_ee",
+                        "wildcard_dv_geotrust",
+                        "wildcard_dv_rapidssl",
+                        "cloud_dv_geotrust",
+                        "ssl_dv_geotrust_flex",
+                        "ssl_plus",
+                        "ssl_multi_domain",
+                        "ssl_wildcard",
+                        "ssl_ev_plus",
+                        "ssl_ev_multi_domain",
+                        "ssl_cloud_wildcard",
+                        "ssl_basic",
+                        "ssl_ev_basic",
+                        "ssl_thawte_webserver",
+                        "ssl_ev_thawte_webserver",
+                        "ssl_geotrust_truebizid",
+                        "ssl_ev_geotrust_truebizid",
+                        "ssl_securesite_pro",
+                        "ssl_ev_securesite_pro",
+                        "ssl_securesite",
+                        "ssl_securesite_multi_domain",
+                        "ssl_securesite_wildcard",
+                        "ssl_ev_securesite",
+                        "ssl_ev_securesite_multi_domain",
+                        "ssl_securesite_flex",
+                        "ssl_ev_securesite_flex",
+                        "client_premium",
+                        "client_email_security_plus",
+                        "client_digital_signature_plus",
+                        "client_authentication_plus",
+                        "class1_smime",
+                        "client_grid_premium",
+                        "grid_host_ssl",
+                        "grid_host_ssl_multi_domain",
+                        "client_grid_robot_fqdn",
+                        "client_grid_robot_name",
+                        "client_grid_robot_email",
+                        "private_ssl_plus",
+                        "private_ssl_wildcard",
+                        "private_ssl_multi_domain",
+                        "private_ssl_flex",
+                        "code_signing",
+                        "code_signing_ev",
+                        "document_signing_org_1",
+                        "document_signing_org_2",
+                        "vmc_basic"
+                    ],
+                    "order": 3
+                },
+                "valid_till": {
+                    "description": "Filter date a certificate is valid till (format: YYYY-MM-DD). Use 'toady' to specify today's date. You can use '<' or '>' in front of the date to specify before or after the given date (e.g. '>today' is all certificates that expire after today).",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 4
+                },
+                "common_name": {
+                    "description": "Filter on the certificate common name",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 4
+                },
+                "date_created": {
+                    "description": "Filter date a certificate was created (format: YYYY-MM-DD). Use 'toady' to specify today's date. You can use '<' or '>' in front of the date to specify before or after the given date (e.g. '>today' is all certificates that expire after today).",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 5
+                },
+                "is_renewed": {
+                    "description": "Filter on if the certificate has been renewed is renewed",
+                    "data_type": "string",
+                    "value_list": [
+                        "True",
+                        "False"
+                    ],
+                    "required": false,
+                    "order": 6
+                },
+                "email": {
+                    "description": "Filter certificates tied to an email",
+                    "data_type": "string",
+                    "required": false,
+                    "contains": [
+                        "email"
+                    ],
+                    "order": 7
+                },
+                "certificate_id": {
+                    "description": "Filter on certificate id",
+                    "data_type": "string",
+                    "contains": [
+                        "digicert certificate id"
+                    ],
+                    "required": false,
+                    "order": 8
+                },
+                "serial_number": {
+                    "description": "Filter on certificate serial number",
+                    "data_type": "string",
+                    "required": false,
+                    "order": 9
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "column_name": "Action Status",
+                    "column_order": 0,
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.order_id",
+                    "data_type": "string",
+                    "contains": [
+                        "digicert order id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.organization_id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.product_name_id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.valid_till",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.common_name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.date_created",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.is_renewed",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.email",
+                    "data_type": "string",
+                    "contains": [
+                        "email"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.certificate_id",
+                    "data_type": "string",
+                    "contains": [
+                        "digicert certificate id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.serial_number",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.total_orders",
+                    "data_type": "numeric",
+                    "column_name": "Total Orders",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "digicert order id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "digicert certificate id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.common_name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.dns_names",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.valid_from",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.valid_till",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.days_remaining",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.certificate.signature_hash",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.is_renewed",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.date_created",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.organization.id",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.organization.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.validity_years",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.order_valid_till",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.disable_renewal_notifications",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.container.id",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.container.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.product.name_id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.product.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.product.type",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.has_duplicates",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.has_reissues",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.product_name_id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.number_of_sans",
                     "data_type": "numeric"
                 }
             ],
